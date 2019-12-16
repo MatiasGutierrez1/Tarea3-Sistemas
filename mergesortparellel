@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+#include <time.h>
+#define SIZE 5000
+
+
+
+u_int64_t rdtsc()
+{
+    u_int64_t lo,hi;
+    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((u_int64_t)hi << 32) | lo;
+}
+int randInt(int k)
+{
+    srand(rdtsc());
+    return (rand() % k) + 1;
+}
+void merge(int* array, int start, int end)
+{
+    int middle = (start + end) / 2;
+    int temp_index = 0;
+    int* temp = malloc(sizeof(int) * (end - start + 1));
+    int left = start;
+    int right = middle + 1;
+    while((left <= middle) && (right <= end)) {
+        if (array[left] < array[right]) {
+            temp[temp_index] = array[left];
+            temp_index++;
+            left++;
+        }
+        else {
+            temp[temp_index] = array[right];
+            temp_index++;
+            right++;
+        }
+    }
+    while(left <= middle) {
+        temp[temp_index] = array[left];
+        temp_index++;
+        left++;
+    }
+    while(right <= end) {
+        temp[temp_index] = array[right];
+        temp_index++;
+        right++;
+    }
+    int i;
+    for(i = start; i <= end; i++) {
+        array[i] = temp[i - start];
+    }
+    free(temp);
+}
+
+void mergeSort(int* array, int start, int end) {
+
+    if(start < end) {
+        int middle = (start + end) / 2;
+        omp_set_nested(1);                               /////
+        omp_set_num_threads(2);
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+                mergeSort(array, start, middle);
+            
+            #pragma omp section
+                mergeSort(array, middle + 1, end);
+        }   
+        merge(array, start, end);
+        
+    }
+}
+
+
+int main() {
+    int* nums = malloc(sizeof(int) * SIZE);
+    int i;
+    for(i = 0; i < SIZE; i++) {
+        nums[i] = randInt(100);
+    }
+    
+    clock_t begin = clock();
+    mergeSort(nums, 0, SIZE - 1);
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("TIEMPO MERGE SECUENCIAL %lf\n", time_spent);
+    return 0;
+}
