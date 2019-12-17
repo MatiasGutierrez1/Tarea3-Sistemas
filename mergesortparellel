@@ -56,8 +56,8 @@ void merge(int* array, int start, int end)
 void mergeSort(int* array, int start, int end) {
 
     if(start < end) {
+        int middle = (start + end) / 2;
         if ((end-start) > 1024){
-            int middle = (start + end) / 2;
             omp_set_nested(1);                               
             omp_set_num_threads(2);
             #pragma omp parallel sections
@@ -66,9 +66,13 @@ void mergeSort(int* array, int start, int end) {
                     mergeSort(array, start, middle);
                 #pragma omp section
                     mergeSort(array, middle + 1, end);
-            }  
-        
-        merge(array, start, end);
+            }   
+            merge(array, start, end);
+        }
+        else{
+            mergeSort(array, start, middle);
+            mergeSort(array, middle + 1, end);
+            merge(array, start, end);
         }
     }
 }
