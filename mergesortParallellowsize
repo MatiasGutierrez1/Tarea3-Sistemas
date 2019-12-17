@@ -75,21 +75,26 @@ void mergeSort(int* array, int start, int end) {
 
 
 int main() {
+
+    FILE *datos;
     int* nums = malloc(sizeof(int) * SIZE);
     int i;
+    datos = open("datos.txt","w");
+    fprintf("Datos sin ordenar\n");
     for(i = 0; i < SIZE; i++) {
         nums[i] = randInt(100);
+        fprintf("%d - ",nums[i]);
     }
-    
+    fprintf("\n");
     clock_t begin = clock();
     mergeSort(nums, 0, SIZE - 1);
     clock_t end = clock();
-    
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("TIEMPO MERGE PARALLELO %lf\n", time_spent);
-
     for(i = 0; i < SIZE; i++) {
-        printf("%d \n",nums[i]);
+        fprintf("%d - ",nums[i]);
     }
+    frpintf("\n");
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("TIEMPO MERGE SECUENCIAL %lf\n", time_spent);
+    fclose (datos);    
     return 0;
 }
